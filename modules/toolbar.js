@@ -251,7 +251,10 @@ Toolbar.DEFAULTS = {
           this.quill.format('list', 'unchecked', Quill.sources.USER);
         }
       } else {
-        this.quill.format('list', value, Quill.sources.USER);
+        this.quill.format('list', {
+          type: value,
+          style: value === 'ordered' ? '1' : 'disc'
+        }, Quill.sources.USER);
       }
     }
   }

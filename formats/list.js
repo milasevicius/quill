@@ -41,21 +41,36 @@ ListItem.tagName = 'LI';
 
 class List extends Container {
   static create(value) {
-    let tagName = value === 'ordered' ? 'OL' : 'UL';
+    let tagName = value.type === 'ordered' ? 'OL' : 'UL';
     let node = super.create(tagName);
+
+    if (value.style) {
+      node.setAttribute('type', value.style);
+    }
+
     if (value === 'checked' || value === 'unchecked') {
       node.setAttribute('data-checked', value === 'checked');
     }
+
     return node;
   }
 
   static formats(domNode) {
-    if (domNode.tagName === 'OL') return 'ordered';
+    if (domNode.tagName === 'OL') {
+        return {
+        type: 'ordered',
+        style: domNode.getAttribute('type') || '1'
+      };
+    }
+
     if (domNode.tagName === 'UL') {
       if (domNode.hasAttribute('data-checked')) {
         return domNode.getAttribute('data-checked') === 'true' ? 'checked' : 'unchecked';
       } else {
-        return 'bullet';
+        return {
+          type: 'bullet',
+          style: domNode.getAttribute('type') || 'disc'
+        };
       }
     }
     return undefined;
@@ -102,10 +117,14 @@ class List extends Container {
   optimize(context) {
     super.optimize(context);
     let next = this.next;
-    if (next != null && next.prev === this &&
-        next.statics.blotName === this.statics.blotName &&
-        next.domNode.tagName === this.domNode.tagName &&
-        next.domNode.getAttribute('data-checked') === this.domNode.getAttribute('data-checked')) {
+    if (
+      next != null && next.prev === this &&
+      next.statics.blotName === this.statics.blotName &&
+      next.domNode.tagName === this.domNode.tagName && (
+        next.domNode.getAttribute('data-checked') === this.domNode.getAttribute('data-checked') ||
+        next.domNode.getAttribute('type') === this.domNode.getAttribute('type')
+      )
+    ) {
       next.moveChildren(this);
       next.remove();
     }
